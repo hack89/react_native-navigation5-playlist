@@ -1,0 +1,738 @@
+################
+STACK NAVIGATOR
+################
+
+    ################################
+    create a config folder:
+    ################################
+
+-import React and navigation file :
+-----------------------------------
+
+    import React from 'reac'
+    import {NavigationContainer} from '@react-navigation/native'
+    import {createStakNavigator} from '@react-navigation/stack'
+
+    import ContactsList from '../screens/ContactsList'
+    import ContactDetails from '../screens/ContactDetails'
+
+-create the navigation stack:
+-----------------------------------
+
+    const ContactsStack = createStakNavigator()
+
+-create the screen:
+-----------------------------------
+
+    const ContactsStackScreen =()=> (
+        <ContactsStack.Navigator>
+            <ContactsStack.Screen name="ContactsList" component={ContactsList} />
+            <ContactsStack.Screen name="ContactDetails" component={ContactDetails} />
+        </ContactsStack.Navigator>        
+    )
+
+
+-export the navigator:
+-----------------------------------
+
+export default () => (
+    <NavigationContainer>
+        <ContactsStackScreen />
+    </NavigationContainer>
+)
+
+
+#####################
+in the index.js file 
+#####################
+
+-import the navigation 
+-----------------------------------
+
+import React from "react";
+import Navigation from "./config/navigation";
+
+export default () => <Navigation />;
+-----------------------------------
+
+
+##################
+in ContactsList.js 
+##################
+
+-We can use the navigation props to navigate 
+-Each single row has: 
+-----------------------------------
+
+ <Row
+    image={{ uri: item.picture.thumbnail }}
+    title={name}
+    subtitle={item.email}
+    onPress={() => navigation.push('ContactDetails')}  <--NAVIGATION
+/>
+
+
+####################
+in ContactDetails.js 
+####################
+
+-We can use the {navigation} props to navigate 
+-We can use the {route} props:
+-----------------------------------
+                                                     ----------------
+   we pass the single user as a second argument from ContactsList.js:
+   ---------------------------------------           ----------------
+
+     <Row
+        image={{ uri: item.picture.thumbnail }}
+        title={name}
+        subtitle={item.email}
+        onPress={() => navigation.push("ContactDetails", {contact: item})} <-- SECOND ARGUMENT
+    />
+
+        -----------------
+-So, in ContactDetails.js we can now access the item using the {route} props:
+        ----------------- ------------------------------------------------------
+
+    export default ({route}) => {
+        const contactInfo = route.params.contact;
+        return (
+            <Text>{JSON.stringify(contactInfo, null, 2)}</Text> (example)  
+        )
+    };
+
+#########################
+Stack navigation options 
+#########################
+
+-we can use multiple options from navigation for example the headerTitle:
+--------------------------------------------------------------------------
+    -in navigation.js:
+    --------------------
+
+        <ContactsStack.Navigator>
+            <ContactsStack.Screen
+            name="ContactsList"
+            component={ContactsList}
+----->      options={{          
+                headerTitle: "Contacts",
+            }}
+        />
+
+-we can pass the name of each contact in the header when we click the specific contact:
+
+        <ContactsStack.Screen
+            name="ContactDetails"
+            component={ContactDetails}
+----->      options={({ route }) => {
+                return {
+                headerTitle: `${route.params.contact.name.first} ${route.params.contact.name.last}`,
+                };
+            }}
+        />
+
+
+
+-we can also create a customization that affects all the headers in the stack:
+-------------------------------------------------------------------------------
+
+<ContactsStack.Navigator 
+    screenOptions={{            <--- screenOptions in the Navigator 
+        headerStyle: {
+            backgroundColor: "red",
+        },
+    }}
+    >
+    <ContactsStack.Screen
+      name="ContactsList"
+      component={ContactsList}
+      options={{
+        headerTitle: "Contacts",
+      }}
+    />
+
+    but if we want the contact header of another color we can overwrite the headerStyle:
+    ------------------------------------------------------------------------------------
+
+    <ContactsStack.Screen
+      name="ContactDetails"
+      component={ContactDetails}
+      options={({ route }) => {
+        return {
+          headerTitle: `${route.params.contact.name.first} ${route.params.contact.name.last}`,
+          headerStyle: {
+            backgroundColor: "purple",
+          },
+        };
+      }}
+    />
+  </ContactsStack.Navigator>
+
+
+##############
+TAB NAVIGATOR
+##############
+
+in navigation.js import: 
+------------------------
+    
+    import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
+
+and create the tab navigator an tab screen:
+-------------------------------------------
+  
+    const AppTabs = createBottomTabNavigator();
+    const AppTabsScreen = () => (
+        <AppTabs.Navigator>
+            <AppTabs.Screen name="Contacts" component={ContactsStackScreen} /> <--- ***
+        </AppTabs.Navigator>
+    );
+
+    export default () => (
+        <NavigationContainer>
+            <AppTabsScreen />  <-- replace the ContactsStackScreen with the AppTabsScreen
+                                    Pass the ContactsStackScreen in the component field of AppTabsScreen ***
+        </NavigationContainer>
+    );
+
+
+###############################
+IMPORT ICONS IN TAB NAVIGATION
+###############################
+
+in navigation.js:
+
+    import { Ionicons } from "@expo/vector-icons";
+
+-for each tab add the option field that is a function:
+------------------------------------------------------
+
+    <AppTabs.Screen
+      name="Contacts"
+      component={ContactsStackScreen}
+      ===========================================================================
+      options={{
+        tabBarIcon: (props) => (
+          <Ionicons name="ios-contacts" size={props.size} color={props.color} />
+        ),
+      }}
+      ===========================================================================
+    />
+
+-we can add default options for the tabnavigator and ALL the screens:
+---------------------------------------------------------------------
+
+     <AppTabs.Navigator
+        screenOptions={{
+            tabBarLabel: "Test", 
+        }}
+    >
+
+-we can also overwrite some screen if we want:
+------------------------------------------------
+
+    <AppTabs.Screen
+      name="Contacts"
+      component={ContactsStackScreen}
+      options={{
+        tabBarLabel: 'Contacts',  <------ JUST FOR CONTACTS
+        tabBarIcon: (props) => (
+          <Ionicons name="ios-contacts" size={props.size} color={props.color} />
+        ),
+      }}
+    />
+
+
+####################
+CHANGING TABS STYLE
+####################
+
+  <AppTabs.Navigator
+    tabBarOptions={{
+      activeTintColor: "yellow",
+      activeBackgroundColor: "green",
+    }}
+  >
+
+
+################
+DRAWER NAVIGATOR
+################
+
+import in navigation.js: 
+--------------------------
+
+    import {createDrawerNavigator} from '@react-navigation/drawer'
+
+-create the drawer navigator and pass the AppTabsScreen in the component
+-------------------------------------------------------------------------
+
+const AppDrawer = createDrawerNavigator()
+const AppDrawerScreen =()=> (
+    <AppDrawer.Navigator>
+        <AppDrawer.Screen name="Tabs" component={AppTabsScreen}/>
+        <AppDrawer.Screen name="Settings" component={Settings} />
+    </AppDrawer.Navigator>
+)
+
+
+-and replace in the export navigator:
+-------------------------------------
+
+
+export default () => (
+  <NavigationContainer>
+    <AppDrawerScreen />
+  </NavigationContainer>
+);
+
+
+-set a toggle drawer:
+---------------------
+
+in settings.js --> the screen we access from the settings button in the drawer menu 
+
+    import React from "react";
+    import { Button, SafeAreaView } from "react-native";
+
+    export default ({ navigation }) => (
+    <SafeAreaView style={{ marginTop: 30 }}>
+        <Button title="Toggle Drawer" onPress={() => navigation.toggleDrawer()} />
+    </SafeAreaView>
+    );
+
+
+-OPTIONS:
+----------
+
+option for the Navigator:
+--------------------------
+    <AppDrawer.Navigator 
+        drawerType="slide"  <-- push the content to the right when opened
+        drawerType="back"
+        drawerPosition="right" <-- change the slide from right to left 
+    >
+
+option for the screen:
+--------------------------
+    <AppDrawer.Screen
+        name="Settings"
+        component={Settings}
+        options={{
+            gestureEnabled: false,  <-- disable the swipe from right in the settings screen
+        }}
+    />
+
+    <AppDrawer.Screen
+        name="Tabs" ****
+        component={AppTabsScreen}
+        options={{ drawerLabel: "Home" }} <-- set the name in the ne drawer 
+    />
+
+
+########################################
+NAVIGATING BETWEEN DIFFERENT NAVIGATORS
+########################################
+
+-if we want to go from the settings list directly to the actions list 
+
+so in settings.js:
+------------------
+    <Button
+      title="To actions"
+      onPress={() => {
+        navigation.navigate("Tabs", {   <-- go to Tabs**** and than in the screen Actions
+                screen: "Actions" ,
+                params: { userId: 'anythingIneedToPass' } <-- pass also params to the screen
+            }
+        );  
+      }}
+    />
+
+
+####################
+ATHENTICATION SETUP 
+####################
+
+-create the navigator and the screen 
+
+
+const AuthStack = createStackNavigator();
+const AuthStackScreen = () => (
+  <AuthStack.Navigator>
+    <AuthStack.Screen name="SignIn" component={SignIn} />
+    <AuthStack.Screen name="SignUp" component={SignUp} />
+  </AuthStack.Navigator>
+);
+
+
+-we need to show screen dynamically: if we have the token we are logged:
+---------------------------------------------------------------------
+
+export default () => {
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [user, setUser] = React.useState(null);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(!isLoading);
+      setUser({});
+    }, 1000);
+  }, []);
+
+  return (
+    <NavigationContainer>
+      {/* <AppDrawerScreen /> */}
+      {isLoading ? (
+        <Loading />
+      ) : user ? (
+        <AppDrawerScreen />
+      ) : (
+        <AuthStackScreen />
+      )}
+    </NavigationContainer>
+  );
+};
+
+===================================================================
+        AUTHENTICATION FROM THE OTHER LINK EXAMPLE
+===================================================================
+
+context.js 
+----------
+
+import React from "react";
+export const AuthContext = React.createContext();
+
+
+App.js 
+-------
+
+import React, { useState, useEffect, useMemo } from "react";
+import { StyleSheet, Text, View, Button, Easing } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { createStackNavigator } from "@react-navigation/stack";
+import { AuthContext } from "./context";
+import {
+  SignIn,
+  CreateAccount,
+  Search,
+  Home,
+  Details,
+  Search2,
+  Profile,
+  Splash,
+} from "./Screens";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+const AuthStack = createStackNavigator();
+const AuthStackScreen = () => (
+  <AuthStack.Navigator>
+    <AuthStack.Screen
+      name="SignIn"
+      component={SignIn}
+      options={{ title: "SignIn Page" }}
+    />
+    <AuthStack.Screen
+      name="CreateAccount"
+      component={CreateAccount}
+      options={{ title: "CreateAccount Page" }}
+    />
+  </AuthStack.Navigator>
+);
+
+const ProfileStack = createStackNavigator();
+const ProfileStackScreen = () => (
+  <ProfileStack.Navigator>
+    <ProfileStack.Screen name="Profile" component={Profile} />
+  </ProfileStack.Navigator>
+);
+
+const HomeStack = createStackNavigator();
+const HomeStackSceen = () => (
+  <HomeStack.Navigator>
+    <HomeStack.Screen name="Home" component={Home} />
+    <HomeStack.Screen
+      name="Details"
+      component={Details}
+      options={({ route }) => ({
+        title: route.params.name,
+      })}
+    />
+  </HomeStack.Navigator>
+);
+
+const SearchStack = createStackNavigator();
+const SearchStackSceen = () => (
+  <SearchStack.Navigator>
+    <SearchStack.Screen name="Search" component={Search} />
+    <SearchStack.Screen name="Search2" component={Search2} />
+  </SearchStack.Navigator>
+);
+
+const Tabs = createBottomTabNavigator();
+const TabsScreen = () => (
+  <Tabs.Navigator>
+    <Tabs.Screen name="Home" component={HomeStackSceen} />
+    <Tabs.Screen name="Profile" component={SearchStackSceen} />
+  </Tabs.Navigator>
+);
+
+const Drawer = createDrawerNavigator();
+const DrawerScreen = () => (
+  <Drawer.Navigator initialRouteName="Profile">
+    <Drawer.Screen name="Home" component={TabsScreen} />
+    <Drawer.Screen name="Profile" component={ProfileStackScreen} />
+  </Drawer.Navigator>
+);
+
+const RootStack = createStackNavigator();
+const RootStackScreen = ({ userToken }) => (
+  <RootStack.Navigator headerMode="none">
+    {userToken ? (
+      <RootStack.Screen
+        name="App"
+        component={DrawerScreen}
+        options={{ animationEnabled: false }}
+      />
+    ) : (
+      <RootStack.Screen
+        name="Auth"
+        component={AuthStackScreen}
+        options={{ animationEnabled: false }}
+      />
+    )}
+  </RootStack.Navigator>
+);
+
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [userToken, setUserToken] = useState(null);
+
+  const authContext = useMemo(() => {
+    return {
+      signIn: () => {
+        setIsLoading(false);
+        setUserToken("asd");
+      },
+      signUp: () => {
+        setIsLoading(false);
+        setUserToken("asd");
+      },
+      signOut: () => {
+        setIsLoading(false);
+        setUserToken(null);
+      },
+    };
+  }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1400);
+  }, []);
+
+  if (isLoading) {
+    return <Splash />;
+  }
+
+  return (
+    <AuthContext.Provider value={authContext}>
+      <NavigationContainer>
+        <RootStackScreen userToken={userToken} />
+      </NavigationContainer>
+    </AuthContext.Provider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
+
+export default App;
+
+
+===================================================================
+        
+===================================================================
+
+
+############################################
+ROOTSTACK NAVIGATOR AND GLOBAL MODAL SCREEN
+############################################
+
+-create a RootStack navigator and refactor the export default:
+-----------------------------------------------------------------
+
+    const RootStack = createStackNavigator();
+    const RootStackScreen = () => {
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [user, setUser] = React.useState(null);
+
+    React.useEffect(() => {
+        setTimeout(() => {
+        setIsLoading(!isLoading);
+        setUser({});
+        }, 1000);
+    }, []);
+    return (
+        <RootStack.Navigator
+        headerMode="none"
+        screenOptions={{ animationEnabled: false }}
+        >
+        {isLoading ? (
+            <RootStack.Screen component={Loading} name="Loading" />
+        ) : user ? (
+            <RootStack.Screen component={AppDrawerScreen} name="AppDrawerScreen" />
+        ) : (
+            <RootStack.Screen component={AuthStackScreen} name="AuthStackScreen" />
+        )}
+        </RootStack.Navigator>
+    );
+    };
+
+    export default () => {
+    return (
+        <NavigationContainer>
+        <RootStackScreen />
+        </NavigationContainer>
+    );
+    };
+
+
+in the AppTabs.Navigator add an initialRouteName option:
+---------------------------------------------------------  
+
+  <AppTabs.Navigator
+    initialRouteName="Actions"
+
+
+add a RootStack.Screen:
+--------------------------
+
+  <RootStack.Screen name="Modal" component={Modal}  options={{animationEnabled: true}}/>
+
+
+in Actions.js add the navigation to the modal screen:
+------------------------------------------------------
+
+  <Button title="Open Modal" onPress={() => navigation.navigate("Modal")} />
+
+add modal in the RootStack.Navigator:
+-------------------------------------
+    <RootStack.Navigator
+      headerMode="none"
+      screenOptions={{ animationEnabled: false }}
+      mode="modal"
+    >
+
+
+in Modal we can add an onPress action to go back:
+-------------------------------------------------
+    <TouchableOpacity
+      style={{ backgroundColor: "white", padding: 20 }}
+      onPress={() => navigation.pop()}
+    >
+
+
+#########################
+GLOBAL ALERT STYLE MODAL 
+#########################
+
+-add a RootStack screen:
+----------------------------
+
+<RootStack.Screen
+    name="Alert"
+    component={Modal}
+    options={{ animationEnabled: true }}
+/>
+
+
+-in ActionsList.js:
+---------------
+  <Button title="Open Alert" onPress={() => navigation.navigate("Alert")} />
+
+-edit settings in RootStack.Screen:
+------------------------------------
+
+ <RootStack.Screen
+        name="Alert"
+        component={Modal}
+        options={{
+          animationEnabled: true,
+          cardStyle: {
+            backgroundColor: "rgba(0,0,0,0.15)",
+          },
+          cardOverlayEnabled: true,
+          cardStyleInterpolator: (input) => {
+            const { current } = input;
+            const { progress } = current;
+            return {
+              cardStyle: {
+                opacity: progress.interpolate({
+                  inputRange: [0, 0.5, 0.9, 1],
+                  outputRange: [0, 0.25, 0.7, 1],
+                }),
+              },
+              overlayStyle: {
+                opacity: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 0.5],
+                  extrapolate: "clamp",
+                }),
+              },
+            };
+          },
+        }}
+      />
+
+
+####################
+OPEN MODAL FROM TAB
+####################
+
+-create placeholder components:
+-----------------------------------
+const CreateNewPlaceholder = () => (
+  <View style={{ flex: 1, backgroundColor: "blue" }} />
+);
+
+const CreateNew = () => <View style={{ backgroundColor: "red" }} />;
+
+
+-create a new screen in the tab navigator 
+-----------------------------------------
+
+ <AppTabs.Screen
+      name="Create"
+      component={CreateNewPlaceholder}
+      options={{
+        tabBarIcon: (props) => (
+          <Ionicons name="ios-add" size={props.size} color={props.color} />
+        ),
+      }}
+      listeners={({navigation})=> ({
+          tabPress: event => {
+              event.preventDefault();
+              navigation.navigate('CreateNew')
+          }
+      })}
+    />
+
+
+-create RootStack.Modal:
+--------------------------
+
+    <RootStack.Screen
+        name="CreateNew"
+        component={CreateNew}
+        options={{ animationEnabled: true }}
+    />
+
